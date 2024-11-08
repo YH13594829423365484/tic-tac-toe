@@ -1,0 +1,27 @@
+th,
+td {
+    border: 1px solid #ddd;
+    text-align: center;
+    width: 30px;
+    height: 30px;
+    box-sizing: border-box;
+}
+
+th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+
+.head {
+    display: flex;
+    justify-content: center;
+}
+
+.content {
+    display: flex;
+    justify-content: center;
+    table {
+        border-collapse: collapse;
+        table-layout: fixed;
+    }
+}
