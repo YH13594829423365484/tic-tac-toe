@@ -7,7 +7,7 @@ import './inedx.css';
  * @returns {JSX.Element}
  */
 const Home = () => {
-    const [mode, setMode] = useState<GameMode | null>(null);
+    const [mode, setMode] = useState<GameMode>(gameMode[0]);
     /**
     *点击选择游戏模式
     * @param {React.MouseEvent<HTMLElement>}
@@ -18,12 +18,12 @@ const Home = () => {
 
     return (
         <>
-            <div className='homePage'>
+            <div className='home-page'>
                 <div>
                     <div>请选择你要进行的游戏模式</div>
-                    <div className='homeGame'>
+                    <div className='home-game'>
                         {gameMode.map((mode, index) => (
-                            <button style={{ margin: '0 10px' }} key={index} onClick={() => choose(index)}>{mode.name.slice(0, mode.name.length - 2)}</button>
+                            <button className='home-button' key={index} onClick={() => choose(index)}>{mode.name.slice(0, mode.name.length - 2)}</button>
                         ))}
                     </div>
                 </div>

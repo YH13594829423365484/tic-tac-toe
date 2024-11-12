@@ -12,18 +12,23 @@ th {
     font-weight: bold;
 }
 
+.head-text {
+    text-align: center;
+    margin: 5px 0
+}
+
 .head {
     display: flex;
     justify-content: center;
     margin-bottom: 30px;
     position: relative;
 
-    .headLeft {
+    .head-left {
         position: absolute;
         left: 35%;
     }
 
-    .headRight {
+    .head-right {
         position: absolute;
         right: 35%;
     }
@@ -31,6 +36,8 @@ th {
 
 .body {
     position: relative;
+    display: flex;
+    justify-content: center;
 
     .history {
         position: absolute;
