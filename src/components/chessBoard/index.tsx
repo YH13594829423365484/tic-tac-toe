@@ -25,7 +25,7 @@ const ChessBoard: React.FC<ChessBoardProps> = ({ value }) => {
     useEffect(() => {
         resume();
     }, [value]);
-    // 监听棋盘判断胜利
+    // 监听棋盘判断胜利或平局
     useEffect(() => {
         let ifOver = 0;
         let res = false;
@@ -33,6 +33,9 @@ const ChessBoard: React.FC<ChessBoardProps> = ({ value }) => {
             for (let col = 0; col < squares.length; col++) {
                 if (squares[row][col]) {
                     ifOver++;
+                }
+                const lastSquares = history[history.length - 2]?.[row]?.[col];
+                if (lastSquares !== undefined && lastSquares !== squares[row][col]) {
                     if (win(row, col, squares[row][col], squares, value)) {
                         setWinner(squares[row][col]);
                         setText(`恭喜${squares[row][col]}方获胜`);
