@@ -5,7 +5,6 @@ const tictactoeMode: GameMode = {
     chessBoard: 3,
     player: ['X', 'O'],
     winRule: 3,
-    id: 1,
 };
 
 const gobangMode: GameMode = {
@@ -14,9 +13,10 @@ const gobangMode: GameMode = {
     chessBoard: 15,
     player: ['⚫', '⚪'],
     winRule: 5,
-    id: 2,
 };
+
+const componentMode = ['hooks', 'class'];
 
 const gameMode: GameMode[] = [tictactoeMode, gobangMode];
 
-export { gameMode };
+export { gameMode, componentMode };

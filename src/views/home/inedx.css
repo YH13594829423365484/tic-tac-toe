@@ -2,10 +2,14 @@
     display: flex;
     justify-content: center;
 
-    .home-game {
+    .text {
         display: flex;
         justify-content: center;
-        margin-top: 10px;
+    }
+
+    .component-mode {
+        display: flex;
+        justify-content: center;
 
         .home-button {
             margin: 0 10px

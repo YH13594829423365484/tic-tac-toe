@@ -4,5 +4,5 @@ interface GameMode {
     chessBoard: number;
     player: string[];
     winRule: number;
-    id: number;
 }
+

@@ -12,10 +12,6 @@ th {
     font-weight: bold;
 }
 
-.head-text {
-    text-align: center;
-    margin: 5px 0
-}
 
 .head {
     display: flex;
