@@ -18,7 +18,7 @@ th {
     justify-content: center;
     margin-bottom: 30px;
     position: relative;
-
+    margin-top: 10px;
     .head-left {
         position: absolute;
         left: 35%;

@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { setHistory, setWinner, setText, setStepNumber, setSquares } from '../../actions';
 import Cell from '../cell';
 import win from '../../utills/win';
-import '../chessBoard/index.css';
+import './index.css';
 
 interface HistoryItem {
     squares: (string | null)[][];
@@ -26,12 +26,12 @@ interface ChessBoardState {
  * class模式的chessboard
  */
 class ChessBoardClass extends React.Component<ChessBoardProps, ChessBoardState> {
-    constructor (props: ChessBoardProps) {
+    constructor(props: ChessBoardProps) {
         super(props);
     }
 
     // 初始化
-    componentDidMount () {
+    componentDidMount() {
         this.resume();
     }
 
@@ -40,7 +40,7 @@ class ChessBoardClass extends React.Component<ChessBoardProps, ChessBoardState> 
 * @param prevProps
 * @param prevState
 */
-    componentDidUpdate (prevProps: ChessBoardProps) {
+    componentDidUpdate(prevProps: ChessBoardProps) {
         if (prevProps.value !== this.props.value) {
             this.resume();
         }
@@ -49,19 +49,19 @@ class ChessBoardClass extends React.Component<ChessBoardProps, ChessBoardState> 
     }
 
     /**
-*
-* @returns 检查是否获胜
-*/
+    *
+    * @returns 检查是否获胜
+    */
     checkWin = () => {
-        const { value, squares } = this.props;
+        const { value, squares, winner, history, dispatch } = this.props;
         for (let row = 0; row < squares.length; row++) {
             for (let col = 0; col < squares.length; col++) {
-                if (squares[row][col] && !this.props.winner) {
-                    const lastSquares = this.props.history[this.props.history.length - 2]?.squares;
+                if (squares[row][col] && !winner) {
+                    const lastSquares = history[history.length - 2]?.squares;
                     if (lastSquares !== undefined && lastSquares[row][col] !== squares[row][col]) {
                         if (win(row, col, squares[row][col], squares, value)) {
-                            this.props.dispatch(setText(`恭喜${squares[row][col]}方获胜`));
-                            this.props.dispatch(setWinner(squares[row][col]));
+                            dispatch(setText(`恭喜${squares[row][col]}方获胜`));
+                            dispatch(setWinner(squares[row][col]));
                         }
                     }
                 }
@@ -72,10 +72,10 @@ class ChessBoardClass extends React.Component<ChessBoardProps, ChessBoardState> 
 * 检查是否平局
 */
     checkDraw = () => {
-        const { squares } = this.props;
+        const { squares, value, winner, dispatch } = this.props;
         const ifOver = squares.reduce((count, row) => count + row.filter(cell => cell).length, 0);
-        if (ifOver === Math.pow(this.props.value.chessBoard, 2) && !this.props.winner) {
-            this.props.dispatch(setText('平局'));
+        if (ifOver === Math.pow(value.chessBoard, 2) && !winner) {
+            dispatch(setText('平局'));
         }
     };
     /**
@@ -85,33 +85,35 @@ class ChessBoardClass extends React.Component<ChessBoardProps, ChessBoardState> 
 * @returns
 */
     callback = (rowIndex: number, colIndex: number) => {
-        if (this.props.squares[rowIndex][colIndex] || this.props.winner) return;
-        const newSquares = JSON.parse(JSON.stringify(this.props.squares));
-        const [firstPlayer, secondPlayer] = this.props.value.player;
-        if (this.props.stepNumber % 2 === 0) {
+        const { squares, value, winner, dispatch, stepNumber, history } = this.props;
+        if (squares[rowIndex][colIndex] || winner) return;
+        const newSquares = JSON.parse(JSON.stringify(squares));
+        const [firstPlayer, secondPlayer] = value.player;
+        if (stepNumber % 2 === 0) {
             newSquares[rowIndex][colIndex] = firstPlayer;
-            this.props.dispatch(setText(`请 ${secondPlayer} 方落子`));
+            dispatch(setText(`请 ${secondPlayer} 方落子`));
         } else {
             newSquares[rowIndex][colIndex] = secondPlayer;
-            this.props.dispatch(setText(`请 ${firstPlayer} 方落子`));
+            dispatch(setText(`请 ${firstPlayer} 方落子`));
         }
-        this.props.dispatch(setSquares(newSquares));
+        dispatch(setSquares(newSquares));
         const newHistory = [
-            ...this.props.history.slice(0, this.props.stepNumber),
+            ...history.slice(0, stepNumber),
             { squares: newSquares },
         ];
-        this.props.dispatch(setHistory(newHistory));
-        this.props.dispatch(setStepNumber(newHistory.length));
+        dispatch(setHistory(newHistory));
+        dispatch(setStepNumber(newHistory.length));
     };
     /**
 * 重置
 */
     resume = () => {
-        this.props.dispatch(setHistory([]));
-        this.props.dispatch(setSquares(Array.from({ length: this.props.value.chessBoard }, () => Array(this.props.value.chessBoard).fill(null))));
-        this.props.dispatch(setWinner(null));
-        this.props.dispatch(setStepNumber(0));
-        this.props.dispatch(setText(`请 ${this.props.value.player[0]} 方落子`));
+        const { value,dispatch } = this.props;
+        dispatch(setHistory([]));
+        dispatch(setSquares(Array.from({ length: value.chessBoard }, () => Array(value.chessBoard).fill(null))));
+        dispatch(setWinner(null));
+        dispatch(setStepNumber(0));
+        dispatch(setText(`请 ${value.player[0]} 方落子`));
     };
     /**
 * 返回操作
@@ -120,20 +122,21 @@ class ChessBoardClass extends React.Component<ChessBoardProps, ChessBoardState> 
 * @returns
 */
     back = (stepValue: (string | null)[][], index: number) => {
-        this.props.dispatch(setSquares(stepValue));
-        this.props.dispatch(setStepNumber(index + 1));
-        this.props.dispatch(setWinner(null));
+        const { squares,value,winner,dispatch,text } = this.props;
+        dispatch(setSquares(stepValue));
+        dispatch(setStepNumber(index + 1));
+        dispatch(setWinner(null));
         if (index === 0) {
-            this.props.dispatch(setWinner(null));
-            this.props.dispatch(setText(`请 ${this.props.value.player[0]} 方落子`));
-            this.props.dispatch(setSquares(Array.from({ length: this.props.value.chessBoard }, () => Array(this.props.value.chessBoard).fill(null))));
+            dispatch(setWinner(null));
+            dispatch(setText(`请 ${value.player[0]} 方落子`));
+            dispatch(setSquares(Array.from({ length: value.chessBoard }, () => Array(value.chessBoard).fill(null))));
             return;
         }
-        if (index === this.props.history.length - 1) {
-            if (this.props.text === '平局') return;
-            if (this.props.winner) return;
+        if (index === history.length - 1) {
+            if (text === '平局') return;
+            if (winner) return;
         }
-        index % 2 === 0 ? this.props.dispatch(setText(`请 ${this.props.value.player[1]} 方落子`)) : this.props.dispatch(setText(`请 ${this.props.value.player[0]} 方落子`));
+        index % 2 === 0 ? dispatch(setText(`请 ${value.player[1]} 方落子`)) : dispatch(setText(`请 ${value.player[0]} 方落子`));
     };
     /**
 * 渲染棋盘
@@ -141,13 +144,14 @@ class ChessBoardClass extends React.Component<ChessBoardProps, ChessBoardState> 
 * @returns
 */
     renderRow = (rowIndex: number) => {
-        const boardSize = this.props.value.chessBoard;
+        const { squares,value } = this.props;
+        const boardSize = value.chessBoard;
         return (
             <tr key={rowIndex}>
                 {[...Array(boardSize)].map((__, colIndex) => (
                     <Cell
                         key={colIndex}
-                        value={this.props.squares[rowIndex]?.[colIndex] ?? ''}
+                        value={squares[rowIndex]?.[colIndex] ?? ''}
                         onClick={() => this.callback(rowIndex, colIndex)}
                     />
                 ))}
@@ -155,7 +159,7 @@ class ChessBoardClass extends React.Component<ChessBoardProps, ChessBoardState> 
         );
     };
 
-    render () {
+    render() {
         return (
             <>
                 <div className='head'>
