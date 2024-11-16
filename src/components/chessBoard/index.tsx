@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { setHistory, setWinner, setText, setStepNumber, setSquares } from '../../actions';
 import Cell from '../cell';
 import win from '../../utills/win';
 import './index.css';
@@ -10,17 +12,19 @@ interface ChessBoardProps {
  * @returns {JSX.Element}
  */
 const ChessBoard: React.FC<ChessBoardProps> = ({ value }) => {
+    const dispatch = useDispatch();
     // 获胜者
-    const [winner, setWinner] = useState<string | null>(null);
+    const winner = useSelector((state: any) => state.winner);
     // 棋盘上方文字提示
-    const [text, setText] = useState<string | null>(null);
+    const text = useSelector((state: any) => state.text);
     // 棋盘
-    const [squares, setSquares] = useState<(string | null)[][]>(value ? Array.from({ length: value.chessBoard }, () => Array(value.chessBoard).fill(null))
-        : Array.from({ length: 15 }, () => Array(15).fill(null)));
+    const squares = useSelector((state: any) => state.squares);
     // 每一步的历史记录
-    const [history, setHistory] = useState<(string | null)[][][]>([]);
+    const history = useSelector((state: any) => state.history);
     // 步数
-    const [stepNumber, setStepNumber] = useState<number>(0);
+    const stepNumber = useSelector((state: any) => state.stepNumber);
+    // 落子位置
+    const [location, setLocation] = useState<number[]>([]);
     // 初始化
     useEffect(() => {
         resume();
@@ -33,86 +37,77 @@ const ChessBoard: React.FC<ChessBoardProps> = ({ value }) => {
             for (let col = 0; col < squares.length; col++) {
                 if (squares[row][col]) {
                     ifOver++;
-                }
-                const lastSquares = history[history.length - 2]?.[row]?.[col];
-                if (lastSquares !== undefined && lastSquares !== squares[row][col]) {
-                    if (win(row, col, squares[row][col], squares, value)) {
-                        setWinner(squares[row][col]);
-                        setText(`恭喜${squares[row][col]}方获胜`);
-                        res = true;
-                        break;
+                    const lastSquares = history[history.length - 2] ? history[history.length - 2].squares : undefined;
+                    if (lastSquares !== undefined && lastSquares !== squares[row][col]) {
+                        if (win(row, col, squares[row][col], squares, value)) {
+                            dispatch(setWinner(squares[row][col]));
+                            dispatch(setText(`恭喜${squares[row][col]}方获胜`));
+                            res = true;
+                            break;
+                        }
                     }
                 }
             }
         }
         if (ifOver === Math.pow(value.chessBoard, 2)) {
-            return setText('平局');
+            dispatch(setText('平局'));
         }
         if (!res) {
-            setWinner(null);
+            dispatch(setWinner(null));
         }
     }, [squares]);
-    // 使用 useCallback 来确保 callback 不会频繁变化
-    const memoizedCallback = useCallback(
-        (row: number, col: number) => {
-            callback(row, col);
-        },
-        [callback]
-    );
     /**
      *
      * 下棋操作
      */
-    function callback (rowIndex: number, colIndex: number) {
-        if (squares[rowIndex][colIndex] || winner) return;
+    const callback = useCallback((rowIndex: number, colIndex: number) => {
+        setLocation([rowIndex, colIndex]);
+    }, []);
+    /**
+     * 根据落子位置更新数据
+     */
+    useEffect(() => {
+        if (location.length === 0) return;
+        if (squares[location[0]][location[1]] || winner) return;
         const newSquares = JSON.parse(JSON.stringify(squares));
         if (stepNumber % 2 === 0) {
-            newSquares[rowIndex][colIndex] = value ? value.player[0] : null;
-            setText(`请 ${value.player[1]} 方落子`);
+            newSquares[location[0]][location[1]] = value ? value.player[0] : null;
+            dispatch(setText(`请 ${value.player[1]} 方落子`));
         } else {
-            newSquares[rowIndex][colIndex] = value ? value.player[1] : null;
-            setText(`请 ${value.player[0]} 方落子`);
+            newSquares[location[0]][location[1]] = value ? value.player[1] : null;
+            dispatch(setText(`请 ${value.player[0]} 方落子`));
         }
-        setSquares(newSquares);
-        const newHistory = [...history.slice(0, stepNumber + 1), newSquares];
-        setHistory(newHistory);
-        setStepNumber(newHistory.length - 1);
-    }
+        const newHistory = [...history.slice(0, stepNumber), { squares: newSquares }];
+        dispatch(setSquares(newSquares));
+        dispatch(setHistory(newHistory));
+        dispatch(setStepNumber(newHistory.length));
+    }, [location]);
     /**
      *
      * 重新开始
      */
     function resume () {
-        setHistory([Array.from({ length: value.chessBoard }, () => Array(value.chessBoard).fill(null))]);
-        setSquares(Array.from({ length: value.chessBoard }, () => Array(value.chessBoard).fill(null)));
-        setWinner(null);
-        setStepNumber(0);
-        setText(`请 ${value.player[0]} 方落子`);
+        setLocation([]);
+        dispatch(setHistory([]));
+        dispatch(setSquares(Array.from({ length: value.chessBoard }, () => Array(value.chessBoard).fill(null))));
+        dispatch(setWinner(null));
+        dispatch(setStepNumber(0));
+        dispatch(setText(`请 ${value.player[0]} 方落子`));
     }
     /**
      *
      * 返回
      */
     function back (stepValue: (string | null)[][], index: number) {
-        setSquares(stepValue);
-        setStepNumber(index);
-        if (index === 0 && value) {
-            setWinner(null);
-            setText(`请 ${value.player[0]} 方落子`);
-            setSquares(Array.from({ length: value.chessBoard }, () => Array(value.chessBoard).fill(null)));
-            return;
-        }
-        if (index === history.length - 1) {
-            if (text === '平局') {
-                return;
-            }
+        dispatch(setSquares(stepValue));
+        dispatch(setStepNumber(index + 1));
+        if (index !== history.length - 1) {
+            dispatch(setWinner(null));
+        } else {
+            if (text === '平局') return;
             if (winner) return;
         }
-        if (index % 2 === 1) {
-            setText(value ? `请 ${value.player[1]} 方落子` : null);
-        } else {
-            setText(value ? `请 ${value.player[0]} 方落子` : null);
-        }
+        index % 2 === 0 ? dispatch(setText(value ? `请 ${value.player[1]} 方落子` : null)) : dispatch(setText(value ? `请 ${value.player[0]} 方落子` : null));
     }
     /**
     * 渲染棋盘
@@ -120,13 +115,16 @@ const ChessBoard: React.FC<ChessBoardProps> = ({ value }) => {
     const renderRow = (rowIndex: number) => {
         // 检查 value 和 chessBoard 是否存在
         const boardSize = value?.chessBoard ?? 0;
+        if (squares.length !== boardSize && squares !== 0) return;
         return (
             <tr key={rowIndex}>
                 {[...Array(boardSize)].map((__, colIndex) => (
                     <Cell
                         key={colIndex}
-                        value={squares[rowIndex]?.[colIndex] ?? ''}
-                        onClick={() => memoizedCallback(rowIndex, colIndex)}
+                        row={rowIndex}
+                        col={colIndex}
+                        value={squares[rowIndex][colIndex]}
+                        onClick={callback}
                     />
                 ))}
             </tr>
@@ -150,9 +148,9 @@ const ChessBoard: React.FC<ChessBoardProps> = ({ value }) => {
                     </div>
                 </div>
                 <div className='history'>
-                    {history.map((stepValue, index) => (
+                    {history.map((stepValue: any, index: number) => (
                         <div key={index}>
-                            <button onClick={() => back(stepValue, index)}>返回第{index}步</button>
+                            <button onClick={() => back(stepValue.squares, index)}>返回第{index}步</button>
                         </div>
                     ))}
                 </div>
@@ -161,3 +159,5 @@ const ChessBoard: React.FC<ChessBoardProps> = ({ value }) => {
     );
 };
 export default ChessBoard;
+
+

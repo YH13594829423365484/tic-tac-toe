@@ -11,52 +11,37 @@ function win (row: number, col: number, player: string | null, squares: (string 
         { dx: -1, dy: 1 },  // 左上
     ];
     /**
- *
- * @returns 获取相同方向上的相同棋子数量
- */
-    function getLineCount () {
-        let maxCount = 0;
-        for (const { dx, dy } of directions) {
-            let count = 1;
-
-            // 检查正方向
-            for (let winNum = 1; winNum < value.winRule; winNum++) {
-                const rRow = row + (winNum * dx);
-                const rCol = col + (winNum * dy);
-                if (
-                    rRow >= 0 &&
-                    rRow < value.chessBoard &&
-                    rCol >= 0 &&
-                    rCol < value.chessBoard &&
-                    squares[rRow][rCol] === player
-                ) {
-                    count++;
-                } else {
-                    break;
-                }
-            }
-
-            // 检查反方向
-            for (let winNum = 1; winNum < value.winRule; winNum++) {
-                const dRow = row - (winNum * dx);
-                const dCol = col - (winNum * dy);
-                if (
-                    dRow >= 0 &&
-                    dRow < value.chessBoard &&
-                    dCol >= 0 &&
-                    dCol < value.chessBoard &&
-                    squares[dRow][dCol] === player
-                ) {
-                    count++;
-                } else {
-                    break;
-                }
-            }
-            maxCount = Math.max(maxCount, count);
-        }
-        return maxCount;
+    *
+    * @returns 获取相同方向上的相同棋子数量
+    */
+    let count = 1;
+    for (const direction of directions) {
+        const { dx, dy } = direction;
+        count = Math.max((getLineCount(dx, dy) + getLineCount(dx * (-1), dy * (-1))) - 1, count);
     }
-    return getLineCount() >= value.winRule;
+    /**
+     *
+     * @param dx 行
+     * @param dy 列
+     * @returns 获取方向上的棋子数量
+     */
+    function getLineCount (dx: number, dy: number) {
+        let count = 1;
+        while (
+            row + dx >= 0 &&
+            row + dx < value.chessBoard &&
+            col + dy >= 0 &&
+            col + dy < value.chessBoard &&
+            squares[row + dx][col + dy] === player
+        ) {
+            if (dx > 0) dx++;
+            if (dx < 0) dx--;
+            if (dy > 0) dy++;
+            if (dy < 0) dy--;
+            count++;
+        }
+        return count;
+    }
+    return count >= value.winRule;
 }
 export default win;
-
