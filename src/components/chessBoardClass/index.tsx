@@ -23,24 +23,24 @@ interface ChessBoardProps {
 interface ChessBoardState {
 }
 /**
- * class模式的chessboard
- */
+* class模式的chessboard
+*/
 class ChessBoardClass extends React.Component<ChessBoardProps, ChessBoardState> {
-    constructor(props: ChessBoardProps) {
+    constructor (props: ChessBoardProps) {
         super(props);
     }
 
     // 初始化
-    componentDidMount() {
+    componentDidMount () {
         this.resume();
     }
 
     /**
-* 数据更新时 prevProps和prevState为更新前的数据
-* @param prevProps
-* @param prevState
-*/
-    componentDidUpdate(prevProps: ChessBoardProps) {
+    * 数据更新时 prevProps和prevState为更新前的数据
+    * @param prevProps
+    * @param prevState
+    */
+    componentDidUpdate (prevProps: ChessBoardProps) {
         if (prevProps.value !== this.props.value) {
             this.resume();
         }
@@ -69,8 +69,8 @@ class ChessBoardClass extends React.Component<ChessBoardProps, ChessBoardState> 
         }
     };
     /**
-* 检查是否平局
-*/
+    * 检查是否平局
+    */
     checkDraw = () => {
         const { squares, value, winner, dispatch } = this.props;
         const ifOver = squares.reduce((count, row) => count + row.filter(cell => cell).length, 0);
@@ -79,11 +79,11 @@ class ChessBoardClass extends React.Component<ChessBoardProps, ChessBoardState> 
         }
     };
     /**
-* 下棋操作
-* @param rowIndex
-* @param colIndex
-* @returns
-*/
+    * 下棋操作
+    * @param rowIndex
+    * @param colIndex
+    * @returns
+    */
     callback = (rowIndex: number, colIndex: number) => {
         const { squares, value, winner, dispatch, stepNumber, history } = this.props;
         if (squares[rowIndex][colIndex] || winner) return;
@@ -105,10 +105,10 @@ class ChessBoardClass extends React.Component<ChessBoardProps, ChessBoardState> 
         dispatch(setStepNumber(newHistory.length));
     };
     /**
-* 重置
-*/
+    * 重置
+    */
     resume = () => {
-        const { value,dispatch } = this.props;
+        const { value, dispatch } = this.props;
         dispatch(setHistory([]));
         dispatch(setSquares(Array.from({ length: value.chessBoard }, () => Array(value.chessBoard).fill(null))));
         dispatch(setWinner(null));
@@ -116,13 +116,13 @@ class ChessBoardClass extends React.Component<ChessBoardProps, ChessBoardState> 
         dispatch(setText(`请 ${value.player[0]} 方落子`));
     };
     /**
-* 返回操作
-* @param stepValue
-* @param index
-* @returns
-*/
+    * 返回操作
+    * @param stepValue
+    * @param index
+    * @returns
+    */
     back = (stepValue: (string | null)[][], index: number) => {
-        const { squares,value,winner,dispatch,text } = this.props;
+        const {  value, winner, dispatch, text } = this.props;
         dispatch(setSquares(stepValue));
         dispatch(setStepNumber(index + 1));
         dispatch(setWinner(null));
@@ -139,27 +139,29 @@ class ChessBoardClass extends React.Component<ChessBoardProps, ChessBoardState> 
         index % 2 === 0 ? dispatch(setText(`请 ${value.player[1]} 方落子`)) : dispatch(setText(`请 ${value.player[0]} 方落子`));
     };
     /**
-* 渲染棋盘
-* @param rowIndex
-* @returns
-*/
+    * 渲染棋盘
+    * @param rowIndex
+    * @returns
+    */
     renderRow = (rowIndex: number) => {
-        const { squares,value } = this.props;
+        const { squares, value } = this.props;
         const boardSize = value.chessBoard;
         return (
             <tr key={rowIndex}>
                 {[...Array(boardSize)].map((__, colIndex) => (
                     <Cell
                         key={colIndex}
+                        row={rowIndex}
+                        col={colIndex}
                         value={squares[rowIndex]?.[colIndex] ?? ''}
-                        onClick={() => this.callback(rowIndex, colIndex)}
+                        onClick={this.callback}
                     />
                 ))}
             </tr>
         );
     };
 
-    render() {
+    render () {
         return (
             <>
                 <div className='head'>
@@ -189,10 +191,10 @@ class ChessBoardClass extends React.Component<ChessBoardProps, ChessBoardState> 
     }
 }
 /**
- * 获取store中的数据
- * @param state
- * @returns
- */
+* 获取store中的数据
+* @param state
+* @returns
+*/
 const stateProps = (state: any) => ({
     history: state.history,
     squares: state.squares,
@@ -202,10 +204,10 @@ const stateProps = (state: any) => ({
 });
 
 /**
- * 对store中的数据进行修改
- * @param dispatch
- * @returns
- */
+* 对store中的数据进行修改
+* @param dispatch
+* @returns
+*/
 const dispatchProps = (dispatch: any) => ({ dispatch });
 
 export default connect(stateProps, dispatchProps)(ChessBoardClass);

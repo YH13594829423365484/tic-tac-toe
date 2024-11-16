@@ -9,10 +9,10 @@ export interface HistoryItem {
     squares: (string | null)[][];
 }
 /**
- *
- * @param history 修改历史记录
- * @returns
- */
+*
+* @param history 修改历史记录
+* @returns
+*/
 export const setHistory = (history: HistoryItem[]) => ({
     type: SET_HISTORY,
     payload: { history },

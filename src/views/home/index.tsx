@@ -3,9 +3,9 @@ import { gameMode } from '../../modeData/index';
 import ChessBoardClass from '../../components/chessBoardClass/index';
 import './inedx.css';
 /**
- *  app
- * @returns {JSX.Element}
- */
+*  app
+* @returns {JSX.Element}
+*/
 const Home = () => {
     const [mode, setMode] = useState<GameMode>(gameMode[0]);
     /**

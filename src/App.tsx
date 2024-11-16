@@ -10,10 +10,10 @@ import Home from '../src/views/home/index';
 
 const store = configureStore();
 /**
- * The main application component.
- * @returns {JSX.Element} The rendered App component.
- */
-function App () {
+* The main application component.
+* @returns {JSX.Element} The rendered App component.
+*/
+function App() {
     return (
         <Provider store={store}>
             <Router>
