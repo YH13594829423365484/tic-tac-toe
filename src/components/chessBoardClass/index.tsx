@@ -26,12 +26,12 @@ interface ChessBoardState {
 * class模式的chessboard
 */
 class ChessBoardClass extends React.Component<ChessBoardProps, ChessBoardState> {
-    constructor (props: ChessBoardProps) {
+    constructor(props: ChessBoardProps) {
         super(props);
     }
 
     // 初始化
-    componentDidMount () {
+    componentDidMount() {
         this.resume();
     }
 
@@ -40,7 +40,7 @@ class ChessBoardClass extends React.Component<ChessBoardProps, ChessBoardState> 
     * @param prevProps
     * @param prevState
     */
-    componentDidUpdate (prevProps: ChessBoardProps) {
+    componentDidUpdate(prevProps: ChessBoardProps) {
         if (prevProps.value !== this.props.value) {
             this.resume();
         }
@@ -122,17 +122,13 @@ class ChessBoardClass extends React.Component<ChessBoardProps, ChessBoardState> 
     * @returns
     */
     back = (stepValue: (string | null)[][], index: number) => {
-        const {  value, winner, dispatch, text } = this.props;
+        const { value, winner, dispatch, text } = this.props;
         dispatch(setSquares(stepValue));
         dispatch(setStepNumber(index + 1));
         dispatch(setWinner(null));
-        if (index === 0) {
+        if (index !== history.length - 1) {
             dispatch(setWinner(null));
-            dispatch(setText(`请 ${value.player[0]} 方落子`));
-            dispatch(setSquares(Array.from({ length: value.chessBoard }, () => Array(value.chessBoard).fill(null))));
-            return;
-        }
-        if (index === history.length - 1) {
+        } else {
             if (text === '平局') return;
             if (winner) return;
         }
@@ -161,7 +157,7 @@ class ChessBoardClass extends React.Component<ChessBoardProps, ChessBoardState> 
         );
     };
 
-    render () {
+    render() {
         return (
             <>
                 <div className='head'>
