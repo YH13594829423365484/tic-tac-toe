@@ -21,6 +21,8 @@ interface ChessBoardProps {
 
 // 组件内部的数据
 interface ChessBoardState {
+    gameMode: string;
+    sequence: string;
 }
 /**
 * class模式的chessboard
@@ -28,6 +30,10 @@ interface ChessBoardState {
 class ChessBoardClass extends React.Component<ChessBoardProps, ChessBoardState> {
     constructor(props: ChessBoardProps) {
         super(props);
+        this.state = {
+            gameMode: 'AI模式',
+            sequence: '先手',
+        };
     }
 
     // 初始化
@@ -44,10 +50,83 @@ class ChessBoardClass extends React.Component<ChessBoardProps, ChessBoardState> 
         if (prevProps.value !== this.props.value) {
             this.resume();
         }
+        if (this.state.gameMode === 'AI模式' && this.props.value.chessBoard === 3) {
+            this.aiPlayer();
+        }
         this.checkWin();
         this.checkDraw();
     }
-
+    /**
+     * 根据先手后顺序来判断第一步需要怎么落子
+     * 优先落子棋盘中间位置
+     * 否则落子四个角落
+     */
+    aiPlayer = () => {
+        const { value, squares, stepNumber } = this.props;
+        if (!value || !squares || stepNumber === undefined) return;
+        if (this.state.sequence === '后手') {
+            if (stepNumber === 0) {
+                this.callback(1, 1);
+            } else if (stepNumber % 2 === 0) {
+                if (stepNumber === 2 && squares[0][1] === value.player[1]) {
+                    this.callback(2, 0);
+                } else {
+                    const [row, col] = this.aiWin(value.player[0], value.player[1]);
+                    this.callback(row, col);
+                }
+            }
+        } else {
+            const [row, col] = this.aiWin(value.player[1], value.player[0]);
+            if (stepNumber === 1) {
+                squares[1][1] === null ? this.callback(1, 1) : this.callback(row, col);
+            } else if (stepNumber % 2 === 1) {
+                this.callback(row, col);
+            }
+        }
+    };
+    /**
+     * 判断AI落子位置
+     * 当下一步为AI落子时判断玩家和AI是否存在可以获胜的可能
+     * 如果AI可以获胜则直接获胜
+     * 否则如果玩家可以获胜则拦截
+     * 最后再考虑是否需要营造获胜机会
+     */
+    aiWin = (ai: string, player: string) => {
+        const { value, squares, stepNumber } = this.props;
+        if (!value || !squares || stepNumber === undefined) return [1, 1];
+        // 拦截位置
+        let interception: [number, number] = [1, 1];
+        for (let row = 0; row < value.chessBoard; row++) {
+            for (let col = 0; col < value.chessBoard; col++) {
+                if (squares[row][col] === null) {
+                    if (stepNumber >= 2) {
+                        // ai获胜
+                        if (win(row, col, ai, squares, value)) {
+                            return [row, col];
+                        }
+                        // 玩家获胜
+                        if (win(row, col, player, squares, value)) {
+                            interception = [row, col];
+                        }
+                    }
+                }
+            }
+        }
+        if (!(interception[0] === 1 && interception[1] === 1)) {
+            return interception;
+        }
+        const optimalMoves = [
+            [0, 0], [0, 2], [2, 0], [2, 2], // 角落
+            [0, 1], [1, 0], [1, 2], [2, 1], // 边缘
+        ];
+        for (const move of optimalMoves) {
+            const [row, col] = move;
+            if (squares[row][col] === null) {
+                return [row, col];
+            }
+        }
+        return [1, 1];
+    };
     /**
     *
     * @returns 检查是否获胜
@@ -125,7 +204,6 @@ class ChessBoardClass extends React.Component<ChessBoardProps, ChessBoardState> 
         const { value, winner, dispatch, text } = this.props;
         dispatch(setSquares(stepValue));
         dispatch(setStepNumber(index + 1));
-        dispatch(setWinner(null));
         if (index !== history.length - 1) {
             dispatch(setWinner(null));
         } else {
@@ -134,6 +212,20 @@ class ChessBoardClass extends React.Component<ChessBoardProps, ChessBoardState> 
         }
         index % 2 === 0 ? dispatch(setText(`请 ${value.player[1]} 方落子`)) : dispatch(setText(`请 ${value.player[0]} 方落子`));
     };
+    /**
+     *选择游戏模式
+     */
+    changePlayMode() {
+        this.state.gameMode === 'AI模式' ? this.setState({ gameMode: '玩家对战' }) : this.setState({ gameMode: 'AI模式' });
+        this.resume();
+    }
+    /**
+     * 选择下棋顺序
+     */
+    changeSequence() {
+        this.state.sequence === '先手' ? this.setState({ sequence: '后手' }) : this.setState({ sequence: '先手' });
+        this.resume();
+    }
     /**
     * 渲染棋盘
     * @param rowIndex
@@ -174,6 +266,20 @@ class ChessBoardClass extends React.Component<ChessBoardProps, ChessBoardState> 
                             </table>
                         </div>
                     </div>
+                    {this.props.value.chessBoard === 3 && (
+                        <div>
+                            <div className='playMode'>
+                                <span>请选择对战模式</span>
+                                <button className='middle' disabled={this.state.gameMode === 'AI模式'} onClick={() => this.changePlayMode()}>{'AI模式'}</button>
+                                <button disabled={this.state.gameMode === '玩家对战'} onClick={() => this.changePlayMode()}>{'玩家对战'}</button>
+                            </div>
+                            <div className='sequence'>
+                                <span>请选择下棋顺序</span>
+                                <button className='middle' disabled={!(this.state.gameMode === 'AI模式' && this.state.sequence === '后手')} onClick={() => this.changeSequence()}>{'先手'}</button>
+                                <button disabled={!(this.state.gameMode === 'AI模式' && this.state.sequence === '先手')} onClick={() => this.changeSequence()}>{'后手'}</button>
+                            </div>
+                        </div>
+                    )}
                     <div className='history'>
                         {this.props.history.map((stepValue: any, index: number) => (
                             <div key={index}>

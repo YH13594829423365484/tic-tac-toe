@@ -19,6 +19,7 @@ th {
     margin-bottom: 30px;
     position: relative;
     margin-top: 10px;
+
     .head-left {
         position: absolute;
         left: 35%;
@@ -34,6 +35,25 @@ th {
     position: relative;
     display: flex;
     justify-content: center;
+
+    .playMode {
+        position: absolute;
+        left: 15%;
+
+        .middle {
+            margin: 0 10px;
+        }
+    }
+
+    .sequence {
+        position: absolute;
+        left: 15%;
+        margin-top: 40px;
+
+        .middle {
+            margin: 0 10px;
+        }
+    }
 
     .history {
         position: absolute;

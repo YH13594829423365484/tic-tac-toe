@@ -13,7 +13,7 @@ const store = configureStore();
 * The main application component.
 * @returns {JSX.Element} The rendered App component.
 */
-function App() {
+function App () {
     return (
         <Provider store={store}>
             <Router>
