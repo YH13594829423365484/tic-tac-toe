@@ -29,7 +29,7 @@ interface ChessBoardState {
 * class模式的chessboard
 */
 class ChessBoardClass extends React.Component<ChessBoardProps, ChessBoardState> {
-    constructor(props: ChessBoardProps) {
+    constructor (props: ChessBoardProps) {
         super(props);
         this.state = {
             gameMode: 'AI模式',
@@ -38,7 +38,7 @@ class ChessBoardClass extends React.Component<ChessBoardProps, ChessBoardState> 
     }
 
     // 初始化
-    componentDidMount() {
+    componentDidMount () {
         this.resume();
     }
 
@@ -47,7 +47,7 @@ class ChessBoardClass extends React.Component<ChessBoardProps, ChessBoardState> 
     * @param prevProps
     * @param prevState
     */
-    componentDidUpdate(prevProps: ChessBoardProps) {
+    componentDidUpdate (prevProps: ChessBoardProps) {
         if (prevProps.value !== this.props.value) {
             this.resume();
         }
@@ -165,14 +165,14 @@ class ChessBoardClass extends React.Component<ChessBoardProps, ChessBoardState> 
     /**
      *选择游戏模式
      */
-    changePlayMode() {
+    changePlayMode () {
         this.state.gameMode === 'AI模式' ? this.setState({ gameMode: '玩家对战' }) : this.setState({ gameMode: 'AI模式' });
         this.resume();
     }
     /**
      * 选择下棋顺序
      */
-    changeSequence() {
+    changeSequence () {
         this.state.sequence === '先手' ? this.setState({ sequence: '后手' }) : this.setState({ sequence: '先手' });
         this.resume();
     }
@@ -199,7 +199,7 @@ class ChessBoardClass extends React.Component<ChessBoardProps, ChessBoardState> 
         );
     };
 
-    render() {
+    render () {
         return (
             <>
                 <div className='head'>
